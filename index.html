@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VALENTINE_TERMINAL_V6</title>
+    <style>
+        :root {
+            --terminal-green: #00ff41;
+            --terminal-bg: #050b05;
+            --terminal-red: #ff3131;
+            --accent: var(--terminal-green);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body, html {
+            background-color: var(--terminal-bg);
+            color: var(--accent);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0; padding: 0;
+            height: 100%; width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* Effet CRT léger */
+        .scanlines {
+            position: fixed; inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 3px;
+            pointer-events: none; z-index: 100;
+        }
+
+        #terminal {
+            padding: 20px;
+            padding-bottom: 60vh; 
+            font-size: 14px;
+            line-height: 1.4;
+            text-shadow: 0 0 5px var(--accent);
+        }
+
+        @media (min-width: 600px) {
+            #terminal { font-size: 18px; }
+        }
+
+        .input-line { display: flex; align-items: flex-start; margin-top: 15px; }
+        
+        #user-input {
+            background: transparent; border: none; color: #fff;
+            font-family: inherit; font-size: inherit; outline: none;
+            width: 100%; padding: 0; margin: 0;
+        }
+
+        .cursor {
+            display: inline-block; width: 8px; height: 1em;
+            background-color: var(--accent); animation: blink 0.8s infinite;
+            margin-left: 2px;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+
+        
+        #final-screen {
+            display: none; position: fixed; inset: 0;
+            background: #000; z-index: 200;
+            flex-direction: column; justify-content: center;
+            align-items: center; text-align: center;
+            padding: 20px; opacity: 0; transition: opacity 1s;
+        }
+
+        .heart-ascii {
+            color: var(--terminal-red); font-size: 8px;
+            line-height: 8px; white-space: pre;
+            margin-bottom: 20px;
+        }
+
+        #custom-message {
+            font-size: 1.1rem; line-height: 1.6;
+            margin: 20px 0; color: #eee;
+        }
+
+        .btn {
+            background: transparent; color: white; border: 1px solid #ff4d6d;
+            padding: 15px 30px; font-family: inherit;
+            cursor: pointer; text-transform: uppercase;
+            width: 80%; max-width: 300px;
+        }
+
+        .hidden { display: none; }
+        .error { color: var(--terminal-red); }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+    
+    <div id="terminal" onclick="document.getElementById('user-input').focus()">
+        <div id="output"></div>
+        <div id="input-area" class="input-line hidden">
+            <span>> </span>
+            <input type="text" id="user-input" autocomplete="off" spellcheck="false" inputmode="text">
+            <span class="cursor"></span>
+        </div>
+    </div>
+
+    <div id="final-screen">
+        <div class="heart-ascii">
+    *** ***
+  ******* *******
+ *****************
+ *****************
+  ***************
+    ***********
+      *******
+        ***
+         *
+        </div>
+        <div id="custom-message"></div>
+        <button class="btn" onclick="celebrate()">[ ❤️ ]</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        const RELATIONS = {
+            "1": { label: "MÈRE", color: "#ff85a1", msg: (n) => `Maman ${n}, tu es la fondation de mon univers. Ton amour est le seul code qui n'a jamais de bug. Je t'aime.` },
+            "2": { label: "PÈRE", color: "#00d4ff", msg: (n) => `Papa ${n}, merci d'être mon guide et ma structure. Tu es le processeur le plus puissant que je connaisse.` },
+            "3": { label: "AMOUREUX", color: "#ff3131", msg: (n) => `${n}, mon amour, tu es ma plus belle ligne de destin. Mon cœur ne tourne que pour toi.` },
+            "4": { label: "AMI", color: "#00ff41", msg: (n) => `Hé ${n}, merci d'être dans ma liste de favoris. Tu es l'ami(e) sur qui je peux toujours compter.` },
+            "5": { label: "SOEUR/FRERE", color: "#ffcc00", msg: (n) => `${n}, complice de toujours. Notre lien est gravé dans la mémoire morte du système.` }
+        };
+
+        const output = document.getElementById('output');
+        const userInput = document.getElementById('user-input');
+        const inputArea = document.getElementById('input-area');
+        const finalScreen = document.getElementById('final-screen');
+
+        let userName = "";
+        let selectedRelation = null;
+        let step = "NAME";
+
+        async function write(text, isError = false) {
+            return new Promise(resolve => {
+                const line = document.createElement('div');
+                if(isError) line.className = "error";
+                output.appendChild(line);
+                let i = 0;
+                const interval = setInterval(() => {
+                    line.innerHTML += text.charAt(i);
+                    i++;
+                    if (i >= text.length) {
+                        clearInterval(interval);
+                        window.scrollTo(0, document.body.scrollHeight);
+                        resolve();
+                    }
+                }, 30);
+            });
+        }
+
+        userInput.addEventListener('keydown', async (e) => {
+            if (e.key === 'Enter') {
+                const val = userInput.value.trim();
+                userInput.value = '';
+                inputArea.classList.add('hidden');
+
+                if (step === "NAME") {
+                    userName = val || "Invité";
+                    await write("> NOM : " + userName.toUpperCase());
+                    await write(" ");
+                    await write("QUELLE EST VOTRE RELATION ?");
+                    await write("1. MÈRE | 2. PÈRE | 3. AMOUR");
+                    await write("4. AMI(E) | 5. FRATRIE");
+                    await write("(Tapez le chiffre)");
+                    step = "RELATION";
+                } 
+                else if (step === "RELATION") {
+                    if (RELATIONS[val]) {
+                        selectedRelation = RELATIONS[val];
+                        await write("> OPTION " + val + " VALIDÉE.");
+                        step = "CODE";
+                        await write(" ");
+                        await write("ENTRER MON ANNÉE DE NAISSANCE POUR LANCER L APPLICATION (KEY_CODE) :");
+                    } else {
+                        await write("CHOIX INVALIDE. Tapez 1, 2, 3, 4 ou 5.", true);
+                    }
+                }
+                else if (step === "CODE") {
+                    if (val === "2002") {
+                        await write("> ACCÈS ACCORDÉ. DÉCRYPTAGE...");
+                        setTimeout(reveal, 1000);
+                        return;
+                    } else {
+                        await write("CODE ERRONÉ.", true);
+                    }
+                }
+                inputArea.classList.remove('hidden');
+                userInput.focus();
+            }
+        });
+
+        function reveal() {
+            document.body.style.overflow = "hidden";
+            document.getElementById('terminal').style.display = 'none';
+            document.getElementById('custom-message').innerText = selectedRelation.msg(userName);
+            document.documentElement.style.setProperty('--accent', selectedRelation.color);
+            finalScreen.style.display = 'flex';
+            setTimeout(() => finalScreen.style.opacity = '1', 50);
+        }
+
+        function celebrate() {
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        }
+
+        
+        write("INITIALISATION DU SYSTÈME...").then(() => {
+            write("VOTRE NOM :").then(() => {
+                inputArea.classList.remove('hidden');
+                userInput.focus();
+            });
+        });
+    </script>
+</body>
+</html>
