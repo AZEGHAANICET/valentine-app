@@ -3,99 +3,68 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VALENTINE TERMINAL</title>
+<title>VALENTINE_TERMINAL</title>
 
 <style>
-:root{
-  --terminal-green:#00ff41;
-  --terminal-bg:#050b05;
-  --terminal-red:#ff3131;
-  --accent:var(--terminal-green);
+:root {
+    --terminal-green:#00ff41;
+    --terminal-bg:#050b05;
+    --terminal-red:#ff3131;
+    --accent:var(--terminal-green);
 }
-*{box-sizing:border-box;}
+*{box-sizing:border-box}
 html,body{
-  margin:0;height:100%;
-  background:var(--terminal-bg);
-  color:var(--accent);
-  font-family:"Courier New",monospace;
+    background:var(--terminal-bg);
+    color:var(--accent);
+    font-family:"Courier New",monospace;
+    margin:0;height:100%;
 }
 .scanlines{
-  position:fixed;inset:0;
-  background:linear-gradient(rgba(0,0,0,0) 50%,rgba(0,0,0,.12) 50%);
-  background-size:100% 3px;
-  pointer-events:none;
+    position:fixed;inset:0;
+    background:linear-gradient(rgba(0,0,0,0) 50%,rgba(0,0,0,.12) 50%);
+    background-size:100% 3px;
+    pointer-events:none;
 }
-#terminal{padding:20px;font-size:16px;text-shadow:0 0 5px var(--accent);}
+#terminal{
+    padding:20px;
+    font-size:16px;
+    text-shadow:0 0 5px var(--accent);
+}
 .input-line{display:flex;margin-top:15px}
 #user-input{
-  background:transparent;border:none;color:#fff;
-  font-family:inherit;outline:none;width:100%;
+    background:transparent;border:none;color:#fff;
+    font-family:inherit;outline:none;width:100%;
 }
-.cursor{width:8px;background:var(--accent);animation:blink .8s infinite}
+.cursor{
+    width:8px;background:var(--accent);
+    animation:blink .8s infinite;
+}
 @keyframes blink{50%{opacity:0}}
 .hidden{display:none}
 .error{color:var(--terminal-red)}
 
 #final-screen{
-  display:none;position:fixed;inset:0;
-  background:#000;
-  justify-content:center;
-  align-items:center;
-  flex-direction:column;
-  text-align:center;
-  opacity:0;
-  transition:opacity 1s;
+    display:none;position:fixed;inset:0;
+    background:#000;justify-content:center;
+    align-items:center;flex-direction:column;
+    text-align:center;opacity:0;
+    transition:opacity 1s;
 }
-
 .heart-ascii{
-  color:var(--terminal-red);
-  white-space:pre;
-  font-size:8px;
+    color:var(--terminal-red);
+    white-space:pre;font-size:8px;
 }
-
 #custom-message{
-  opacity:0;
-  transform:translateY(15px);
-  color:#eee;
-  margin:25px;
-  font-size:1.15rem;
-  line-height:1.7;
-  animation:fadeInUp 1.2s ease forwards;
+    color:#eee;
+    margin:25px;
+    font-size:1.15rem;
+    line-height:1.7;
 }
-
-#quote{
-  margin-top:30px;
-  max-width:600px;
-  opacity:0;
-  font-style:italic;
-  color:#ccc;
-  animation:fadeQuote 2s ease forwards;
-  animation-delay:1.5s;
-}
-
-#author{
-  margin-top:8px;
-  font-size:.9rem;
-  color:#888;
-}
-
-@keyframes fadeInUp{to{opacity:1;transform:translateY(0)}}
-@keyframes fadeQuote{to{opacity:1}}
-
-.pulse{animation:pulse 3s ease-in-out infinite}
-@keyframes pulse{
-  0%{text-shadow:0 0 6px rgba(255,255,255,.2)}
-  50%{text-shadow:0 0 14px rgba(255,255,255,.6)}
-  100%{text-shadow:0 0 6px rgba(255,255,255,.2)}
-}
-
 .btn{
-  margin-top:35px;
-  background:transparent;
-  border:1px solid #ff4d6d;
-  color:white;
-  padding:12px 30px;
-  cursor:pointer;
+    background:transparent;
+    border:1px solid #ff4d6d;
+    color:white;padding:12px 30px;
+    cursor:pointer;
 }
 </style>
 </head>
@@ -104,12 +73,12 @@ html,body{
 <div class="scanlines"></div>
 
 <div id="terminal" onclick="userInput.focus()">
-  <div id="output"></div>
-  <div id="input-area" class="input-line hidden">
-    <span>&gt; </span>
-    <input id="user-input" autocomplete="off">
-    <span class="cursor"></span>
-  </div>
+    <div id="output"></div>
+    <div id="input-area" class="input-line hidden">
+        <span>> </span>
+        <input id="user-input" autocomplete="off">
+        <span class="cursor"></span>
+    </div>
 </div>
 
 <div id="final-screen">
@@ -124,14 +93,7 @@ html,body{
        ***
         *
 </div>
-
 <div id="custom-message"></div>
-
-<div id="quote">
-  “<span id="quote-text"></span>”
-  <div id="author">— <span id="quote-author"></span></div>
-</div>
-
 <button class="btn" onclick="celebrate()">[ ❤️ ]</button>
 </div>
 
@@ -143,36 +105,109 @@ const userInput=document.getElementById("user-input");
 const inputArea=document.getElementById("input-area");
 const finalScreen=document.getElementById("final-screen");
 
-let step="NAME", userName="", selectedRelation=null, meetingPlace="";
+let step="NAME";
+let userName="";
+let selectedRelation=null;
+let meetingPlace="";
 
-// fonction aléatoire
 const random=a=>a[Math.floor(Math.random()*a.length)];
 
-// citations philosophiques
-const QUOTES=[
- {q:"Aimer, ce n’est pas se regarder l’un l’autre, c’est regarder ensemble dans la même direction.",a:"Antoine de Saint-Exupéry"},
- {q:"Le cœur a ses raisons que la raison ne connaît point.",a:"Blaise Pascal"},
- {q:"Ce n’est pas le temps qui fait les liens, c’est la présence.",a:"Sénèque"},
- {q:"On ne rencontre jamais les gens par hasard.",a:"Carl Gustav Jung"},
- {q:"L’essentiel est invisible pour les yeux.",a:"Antoine de Saint-Exupéry"}
-];
-
-// relations
 const RELATIONS={
-"1":{label:"MÈRE",color:"#ff85a1", msg:n=>`Maman ${n}, tu es ma fondation. Ton amour est mon code infaillible. 💗`},
-"2":{label:"PÈRE",color:"#00d4ff", msg:n=>`Papa ${n}, merci d'être mon guide. Tu es le processeur de ma vie. 🤍`},
-"3":{label:"AMOUREUX",color:"#ff3131", msg:n=>`${n}, mon amour, tu es ma plus belle ligne de destin. ❤️`},
-"4":{label:"AMI",color:"#00ff41", msg:n=>`
-${userName}…
+"1":{
+ label:"MÈRE",color:"#ff85a1",
+ msg:n=>`
+Maman ${n}…
 
-Tout a commencé à ${meetingPlace}.
-Depuis, tu es resté indispensable.
-Le monde peut changer, pas notre lien. 💚`
+Tu es le point de départ.
+La première chaleur.
+La seule constante quand tout vacille.
+
+Si le monde est un chaos,
+ton amour est ma base stable.
+
+Je t’aime. Toujours. 💗`
 },
-"5":{label:"FRATRIE",color:"#ffcc00", msg:n=>`${userName}, complice de toujours. Notre lien est gravé dans la mémoire. 💛`}
+"2":{
+ label:"PÈRE",color:"#00d4ff",
+ msg:n=>`
+Papa ${n}…
+
+Tu m’as appris à tenir droit,
+même quand le vent pousse fort.
+
+Je n’ai peut-être jamais tout dit,
+mais je marche avec ce que tu m’as transmis.
+
+Merci. 🤍`
+},
+"3":{
+ label:"AMOUR",color:"#ff3131",
+ msg:n=>`
+${n}…
+
+Il y a des gens qu’on croise.
+Et puis il y a toi.
+
+Mon cœur te reconnaît
+avant même que je comprenne pourquoi.
+
+Si aimer est un risque,
+alors je signe sans lire les conditions. ❤️`
+},
+"4":{
+ label:"AMI",color:"#00ff41",
+ msg:n=>{
+ const intros=[
+ `${n}…`,
+ `Écoute-moi ${n}.`,
+ `${n}, pause une seconde.`,
+ `Tu sais quoi ${n} ?`
+ ];
+ const memories=[
+ `Tout a commencé à ${meetingPlace}.`,
+ `Je repense souvent à ${meetingPlace}.`,
+ `${meetingPlace}. Comme si c’était écrit.`,
+ `Un lieu banal… sauf pour nous : ${meetingPlace}.`
+ ];
+ const cores=[
+ `Sans faire de bruit, t’es devenu essentiel.`,
+ `Depuis ce jour, t’as jamais quitté le système.`,
+ `Et sans prévenir… t’étais toujours là.`,
+ `Le temps a passé, pas notre lien.`
+ ];
+ const endings=[
+ `T’es une valeur sûre.`,
+ `Peu de gens méritent ce statut.`,
+ `Le monde peut buguer, pas nous.`,
+ `Rien à prouver. Tout est là.`
+ ];
+ return `
+${random(intros)}
+
+${random(memories)}
+
+${random(cores)}
+
+${random(endings)} 💚
+ `;
+ }
+},
+"5":{
+ label:"FRATRIE",color:"#ffcc00",
+ msg:n=>`
+${n}…
+
+On ne s’est pas choisis,
+mais on s’est construits ensemble.
+
+Même quand tout change,
+toi tu restes.
+
+Lien système.
+Version définitive. 💛`
+}
 };
 
-// machine à écrire
 function write(text,error=false){
  return new Promise(res=>{
   const line=document.createElement("div");
@@ -181,73 +216,72 @@ function write(text,error=false){
   let i=0;
   const t=setInterval(()=>{
    line.textContent+=text[i++]||"";
-   if(i>text.length){clearInterval(t);window.scrollTo(0,document.body.scrollHeight);res();}
+   if(i>text.length){
+    clearInterval(t);
+    window.scrollTo(0,document.body.scrollHeight);
+    res();
+   }
   },30);
  });
 }
 
-function typeMessage(el,text,speed=28){
- let i=0;el.innerHTML="";
- const t=setInterval(()=>{
-  el.innerHTML+=text.charAt(i++);
-  if(i>=text.length){clearInterval(t);el.classList.add("pulse")}
- },speed);
-}
-
-// gestion des étapes
 userInput.addEventListener("keydown",async e=>{
  if(e.key!=="Enter")return;
- const v=userInput.value.trim();userInput.value="";
+ const val=userInput.value.trim();
+ userInput.value="";
  inputArea.classList.add("hidden");
 
  if(step==="NAME"){
-  userName=v||"Invité";
-  await write("> NOM ENREGISTRÉ");
-  await write("CHOISIR RELATION (1-5) :");
+  userName=val||"Invité";
+  await write("> NOM : "+userName.toUpperCase());
+  await write("QUELLE EST VOTRE RELATION ?");
+  await write("1. MÈRE | 2. PÈRE | 3. AMOUR");
+  await write("4. AMI(E) | 5. FRATRIE");
   step="RELATION";
  }
  else if(step==="RELATION"){
-  if(!RELATIONS[v]) await write("CHOIX INVALIDE",true);
+  if(!RELATIONS[val]) await write("CHOIX INVALIDE.",true);
   else{
-   selectedRelation=RELATIONS[v];
-   if(v==="4"){step="MEET"; await write("OÙ NOUS SOMMES-NOUS RENCONTRÉS ?");}
-   else{step="CODE"; await write("ENTRER MON ANNÉE DE NAISSANCE :");}
+   selectedRelation=RELATIONS[val];
+   await write("> OPTION VALIDÉE");
+   if(val==="4"){
+    step="MEET_PLACE";
+    await write("OÙ NOUS SOMMES-NOUS RENCONTRÉS ?");
+   }else{
+    step="CODE";
+    await write("ENTRER MON ANNÉE DE NAISSANCE :");
+   }
   }
  }
- else if(step==="MEET"){
-  meetingPlace=v||"un endroit inoubliable";
+ else if(step==="MEET_PLACE"){
+  meetingPlace=val||"un endroit inoubliable";
+  await write("> SOUVENIR ENREGISTRÉ");
   step="CODE";
   await write("ENTRER MON ANNÉE DE NAISSANCE :");
  }
  else if(step==="CODE"){
-  if(v==="2002"){setTimeout(reveal,800);return;}
-  else await write("CODE ERRONÉ",true);
+  if(val==="2002"){
+   await write("ACCÈS ACCORDÉ...");
+   setTimeout(reveal,900);return;
+  }else await write("CODE ERRONÉ.",true);
  }
+
  inputArea.classList.remove("hidden");
  userInput.focus();
 });
 
-// affichage final
 function reveal(){
  document.getElementById("terminal").style.display="none";
  document.documentElement.style.setProperty("--accent",selectedRelation.color);
+ document.getElementById("custom-message").innerText=
+  selectedRelation.msg(userName);
  finalScreen.style.display="flex";
-
- const quote=random(QUOTES);
- document.getElementById("quote-text").textContent=quote.q;
- document.getElementById("quote-author").textContent=quote.a;
-
- setTimeout(()=>{
-  finalScreen.style.opacity=1;
-  typeMessage(document.getElementById("custom-message"),selectedRelation.msg(userName).trim());
- },300);
+ setTimeout(()=>finalScreen.style.opacity=1,50);
 }
-
 function celebrate(){
- confetti({particleCount:120,spread:90});
+ confetti({particleCount:120,spread:80});
 }
 
-// lancement
 write("INITIALISATION DU SYSTÈME...").then(()=>{
  write("VOTRE NOM :").then(()=>{
   inputArea.classList.remove("hidden");
