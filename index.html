@@ -12,7 +12,7 @@
   --terminal-red:#ff3131;
   --accent:var(--terminal-green);
 }
-*{box-sizing:border-box}
+*{box-sizing:border-box;}
 html,body{
   margin:0;height:100%;
   background:var(--terminal-bg);
@@ -145,8 +145,10 @@ const finalScreen=document.getElementById("final-screen");
 
 let step="NAME", userName="", selectedRelation=null, meetingPlace="";
 
+// fonction aléatoire
 const random=a=>a[Math.floor(Math.random()*a.length)];
 
+// citations philosophiques
 const QUOTES=[
  {q:"Aimer, ce n’est pas se regarder l’un l’autre, c’est regarder ensemble dans la même direction.",a:"Antoine de Saint-Exupéry"},
  {q:"Le cœur a ses raisons que la raison ne connaît point.",a:"Blaise Pascal"},
@@ -155,27 +157,22 @@ const QUOTES=[
  {q:"L’essentiel est invisible pour les yeux.",a:"Antoine de Saint-Exupéry"}
 ];
 
+// relations
 const RELATIONS={
-"4":{
- label:"AMI",color:"#00ff41",
- msg:n=>{
-  return `
-${n}…
+"1":{label:"MÈRE",color:"#ff85a1", msg:n=>`Maman ${n}, tu es ma fondation. Ton amour est mon code infaillible. 💗`},
+"2":{label:"PÈRE",color:"#00d4ff", msg:n=>`Papa ${n}, merci d'être mon guide. Tu es le processeur de ma vie. 🤍`},
+"3":{label:"AMOUREUX",color:"#ff3131", msg:n=>`${n}, mon amour, tu es ma plus belle ligne de destin. ❤️`},
+"4":{label:"AMI",color:"#00ff41", msg:n=>`
+${userName}…
 
-Un jour ordinaire.
-Un lieu simple.
-${meetingPlace}.
-
-Et pourtant,
-quelque chose a commencé là.
-
-Depuis,
-le monde peut changer,
-toi tu es resté. 💚
-  `;
- }
+Tout a commencé à ${meetingPlace}.
+Depuis, tu es resté indispensable.
+Le monde peut changer, pas notre lien. 💚`
+},
+"5":{label:"FRATRIE",color:"#ffcc00", msg:n=>`${userName}, complice de toujours. Notre lien est gravé dans la mémoire. 💛`}
 };
 
+// machine à écrire
 function write(text,error=false){
  return new Promise(res=>{
   const line=document.createElement("div");
@@ -184,7 +181,7 @@ function write(text,error=false){
   let i=0;
   const t=setInterval(()=>{
    line.textContent+=text[i++]||"";
-   if(i>text.length){clearInterval(t);res();}
+   if(i>text.length){clearInterval(t);window.scrollTo(0,document.body.scrollHeight);res();}
   },30);
  });
 }
@@ -197,6 +194,7 @@ function typeMessage(el,text,speed=28){
  },speed);
 }
 
+// gestion des étapes
 userInput.addEventListener("keydown",async e=>{
  if(e.key!=="Enter")return;
  const v=userInput.value.trim();userInput.value="";
@@ -205,18 +203,21 @@ userInput.addEventListener("keydown",async e=>{
  if(step==="NAME"){
   userName=v||"Invité";
   await write("> NOM ENREGISTRÉ");
-  await write("CHOISIR RELATION : 4 = AMI");
+  await write("CHOISIR RELATION (1-5) :");
   step="RELATION";
  }
  else if(step==="RELATION"){
-  selectedRelation=RELATIONS["4"];
-  await write("OÙ NOUS SOMMES-NOUS RENCONTRÉS ?");
-  step="MEET";
+  if(!RELATIONS[v]) await write("CHOIX INVALIDE",true);
+  else{
+   selectedRelation=RELATIONS[v];
+   if(v==="4"){step="MEET"; await write("OÙ NOUS SOMMES-NOUS RENCONTRÉS ?");}
+   else{step="CODE"; await write("ENTRER MON ANNÉE DE NAISSANCE :");}
+  }
  }
  else if(step==="MEET"){
   meetingPlace=v||"un endroit inoubliable";
-  await write("ENTRER MON ANNÉE DE NAISSANCE :");
   step="CODE";
+  await write("ENTRER MON ANNÉE DE NAISSANCE :");
  }
  else if(step==="CODE"){
   if(v==="2002"){setTimeout(reveal,800);return;}
@@ -226,6 +227,7 @@ userInput.addEventListener("keydown",async e=>{
  userInput.focus();
 });
 
+// affichage final
 function reveal(){
  document.getElementById("terminal").style.display="none";
  document.documentElement.style.setProperty("--accent",selectedRelation.color);
@@ -237,8 +239,7 @@ function reveal(){
 
  setTimeout(()=>{
   finalScreen.style.opacity=1;
-  typeMessage(document.getElementById("custom-message"),
-    selectedRelation.msg(userName).trim());
+  typeMessage(document.getElementById("custom-message"),selectedRelation.msg(userName).trim());
  },300);
 }
 
@@ -246,7 +247,8 @@ function celebrate(){
  confetti({particleCount:120,spread:90});
 }
 
-write("INITIALISATION...").then(()=>{
+// lancement
+write("INITIALISATION DU SYSTÈME...").then(()=>{
  write("VOTRE NOM :").then(()=>{
   inputArea.classList.remove("hidden");
   userInput.focus();
